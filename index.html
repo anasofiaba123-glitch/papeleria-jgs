@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>papeleria jgs v2</title>
+  
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Papelería</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f9f9f9;
+      color: #333;
+    }
+    header {
+      background: #0066cc;
+      color: white;
+      padding: 15px;
+      text-align: center;
+    }
+    nav {
+      display: flex;
+      justify-content: center;
+      background: #ddd;
+    }
+    nav button {
+      background: none;
+      border: none;
+      padding: 15px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    nav button:hover {
+      background: #bbb;
+    }
+    section {
+      display: none;
+      padding: 20px;
+    }
+    section.active {
+      display: block;
+    }
+    .productos-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 15px;
+    }
+    .producto {
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 10px;
+      text-align: center;
+      background: white;
+    }
+    .producto img {
+      max-width: 100%;
+      height: 120px;
+      object-fit: contain;
+    }
+    .contacto-box {
+      border: 1px solid #ccc;
+      padding: 15px;
+      margin-top: 15px;
+      background: white;
+      border-radius: 8px;
+    }
+    .hidden {
+      display: none;
+    }
+    .preview-msg {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    .admin-form input, .admin-form select, .admin-form textarea {
+      display: block;
+      margin-bottom: 10px;
+      padding: 6px;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1 id="siteTitle">Papelería Mi Barrio</h1>
+  </header>
+
+  <nav>
+    <button onclick="showSection('inicio')">Inicio</button>
+    <button onclick="showSection('productos')">Productos</button>
+    <button onclick="showSection('impresiones')">Fotocopias / Impresiones</button>
+    <button onclick="showSection('apariencia')">Apariencia</button>
+    <button onclick="showSection('admin')">Modo Dueño</button>
+  </nav>
+
+  <!-- Inicio -->
+  <section id="inicio" class="active">
+    <h2>Bienvenido</h2>
+    <p>Aquí una vista previa de nuestros productos:</p>
+    <div id="productosPreview" class="productos-grid"></div>
+    <div class="contacto-box">
+      <h3>Contáctanos</h3>
+      <p><strong>Teléfono:</strong> <span id="contactNumber">No registrado</span></p>
+      <div id="customMessage" class="preview-msg">Tu mensaje aparecerá aquí...</div>
+    </div>
+  </section>
+
+  <!-- Productos -->
+  <section id="productos">
+    <h2>Productos disponibles</h2>
+    <div id="productosList" class="productos-grid"></div>
+  </section>
+
+  <!-- Impresiones -->
+  <section id="impresiones">
+    <h2>Fotocopias e Impresiones</h2>
+    <form id="printForm">
+      <input type="file" id="printFile" required>
+      <textarea id="printNotes" placeholder="Instrucciones..."></textarea>
+      <button type="submit">Enviar solicitud</button>
+    </form>
+    <p>Tu archivo quedará registrado para que el dueño lo descargue.</p>
+  </section>
+
+  <!-- Apariencia -->
+  <section id="apariencia">
+    <h2>Personalizar apariencia</h2>
+    <label>Color principal:
+      <input type="color" id="colorPicker">
+    </label>
+    <label>Tipografía:
+      <select id="fontSelect">
+        <option value="Arial">Arial</option>
+        <option value="Verdana">Verdana</option>
+        <option value="Georgia">Georgia</option>
+      </select>
+    </label>
+    <label>Tamaño de texto base:
+      <input type="number" id="fontSize" min="12" max="32" value="16"> px
+    </label>
+    <label>Título del sitio:
+      <input type="text" id="titleInput" placeholder="Nuevo título...">
+    </label>
+    <button onclick="applyAppearance()">Aplicar cambios</button>
+  </section>
+
+  <!-- Admin -->
+  <section id="admin">
+    <h2>Panel del Dueño</h2>
+    <div id="adminLogin">
+      <p>Introduce la contraseña:</p>
+      <input type="password" id="adminPass">
+      <button onclick="checkAdmin()">Entrar</button>
+    </div>
+    <div id="adminPanel" class="hidden">
+      <h3>Gestión de productos</h3>
+      <form id="productForm" class="admin-form">
+        <input type="text" id="prodName" placeholder="Nombre del producto" required>
+        <input type="number" id="prodPrice" placeholder="Precio" required>
+        <input type="number" id="prodQty" placeholder="Cantidad disponible" required>
+        <input type="file" id="prodImage" accept="image/*" required>
+        <button type="submit">Agregar producto</button>
+      </form>
+      <div id="adminProducts" class="productos-grid"></div>
+
+      <h3>Solicitudes de impresión</h3>
+      <ul id="printRequests"></ul>
+
+      <h3>Configurar contacto</h3>
+      <label>Número de contacto:
+        <input type="text" id="adminContactNumber" placeholder="Ej: 3001234567">
+      </label>
+      <label>Mensaje personalizado:
+        <textarea id="adminMessage"></textarea>
+      </label>
+      <label>Tipografía:
+        <select id="msgFont">
+          <option value="Arial">Arial</option>
+          <option value="Verdana">Verdana</option>
+          <option value="Georgia">Georgia</option>
+        </select>
+      </label>
+      <label>Tamaño:
+        <input type="number" id="msgSize" value="16" min="10" max="40"> px
+      </label>
+      <label>Color:
+        <input type="color" id="msgColor" value="#000000">
+      </label>
+      <button onclick="saveContact()">Guardar contacto</button>
+    </div>
+  </section>
+
+<script>
+  // Navegación
+  function showSection(id) {
+    document.querySelectorAll("section").forEach(sec => sec.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+  }
+
+  // Apariencia
+  function applyAppearance() {
+    document.body.style.fontFamily = document.getElementById("fontSelect").value;
+    document.body.style.fontSize = document.getElementById("fontSize").value + "px";
+    document.querySelector("header").style.background = document.getElementById("colorPicker").value;
+    let newTitle = document.getElementById("titleInput").value;
+    if(newTitle) document.getElementById("siteTitle").innerText = newTitle;
+  }
+
+  // Admin
+  function checkAdmin() {
+    let pass = document.getElementById("adminPass").value;
+    if(pass === "papeleria123"){
+      document.getElementById("adminLogin").classList.add("hidden");
+      document.getElementById("adminPanel").classList.remove("hidden");
+      loadAdminProducts();
+      loadPrintRequests();
+      loadContactData();
+    } else {
+      alert("Contraseña incorrecta");
+    }
+  }
+
+  // Productos
+  let productos = JSON.parse(localStorage.getItem("productos")) || [];
+
+  document.getElementById("productForm").addEventListener("submit", e=>{
+    e.preventDefault();
+    let name = document.getElementById("prodName").value;
+    let price = document.getElementById("prodPrice").value;
+    let qty = document.getElementById("prodQty").value;
+    let file = document.getElementById("prodImage").files[0];
+    let reader = new FileReader();
+    reader.onload = ()=>{
+      productos.push({name, price, qty, img: reader.result});
+      localStorage.setItem("productos", JSON.stringify(productos));
+      loadProducts();
+      loadAdminProducts();
+      document.getElementById("productForm").reset();
+    };
+    reader.readAsDataURL(file);
+  });
+
+  function loadProducts(){
+    let list = document.getElementById("productosList");
+    let preview = document.getElementById("productosPreview");
+    list.innerHTML = ""; preview.innerHTML = "";
+    productos.forEach((p,i)=>{
+      let div = document.createElement("div");
+      div.className="producto";
+      div.innerHTML=`<img src="${p.img}"><h4>${p.name}</h4><p>$${p.price}</p><p>Cant: ${p.qty}</p>`;
+      list.appendChild(div);
+      if(i<3) preview.appendChild(div.cloneNode(true));
+    });
+  }
+  function loadAdminProducts(){
+    let list = document.getElementById("adminProducts");
+    list.innerHTML="";
+    productos.forEach((p,i)=>{
+      let div=document.createElement("div");
+      div.className="producto";
+      div.innerHTML=`<img src="${p.img}"><h4>${p.name}</h4>
+      <input type='number' value='${p.price}' onchange='updateProduct(${i},this.value,"price")'> 
+      <input type='number' value='${p.qty}' onchange='updateProduct(${i},this.value,"qty")'>
+      <button onclick='deleteProduct(${i})'>Eliminar</button>`;
+      list.appendChild(div);
+    });
+  }
+  function updateProduct(i,val,field){
+    productos[i][field]=val;
+    localStorage.setItem("productos", JSON.stringify(productos));
+    loadProducts();
+  }
+  function deleteProduct(i){
+    productos.splice(i,1);
+    localStorage.setItem("productos", JSON.stringify(productos));
+    loadProducts(); loadAdminProducts();
+  }
+
+  // Impresiones
+  let printRequests=JSON.parse(localStorage.getItem("prints"))||[];
+  document.getElementById("printForm").addEventListener("submit", e=>{
+    e.preventDefault();
+    let file=document.getElementById("printFile").files[0];
+    let notes=document.getElementById("printNotes").value;
+    let reader=new FileReader();
+    reader.onload=()=>{
+      printRequests.push({name:file.name,notes,content:reader.result});
+      localStorage.setItem("prints",JSON.stringify(printRequests));
+      alert("Solicitud enviada");
+      document.getElementById("printForm").reset();
+    };
+    reader.readAsDataURL(file);
+  });
+  function loadPrintRequests(){
+    let ul=document.getElementById("printRequests");
+    ul.innerHTML="";
+    printRequests.forEach((r,i)=>{
+      let li=document.createElement("li");
+      li.innerHTML=`${r.name} - ${r.notes} <a download='${r.name}' href='${r.content}'>Descargar</a>`;
+      ul.appendChild(li);
+    });
+  }
+
+  // Contacto
+  function saveContact(){
+    let num=document.getElementById("adminContactNumber").value;
+    let msg=document.getElementById("adminMessage").value;
+    let font=document.getElementById("msgFont").value;
+    let size=document.getElementById("msgSize").value;
+    let color=document.getElementById("msgColor").value;
+    localStorage.setItem("contact",{num,msg,font,size,color});
+    localStorage.setItem("contact",JSON.stringify({num,msg,font,size,color}));
+    loadContactData();
+  }
+  function loadContactData(){
+    let data=JSON.parse(localStorage.getItem("contact"))||{};
+    if(data.num) document.getElementById("contactNumber").innerText=data.num;
+    if(data.msg){
+      let cm=document.getElementById("customMessage");
+      cm.innerText=data.msg;
+      cm.style.fontFamily=data.font;
+      cm.style.fontSize=data.size+"px";
+      cm.style.color=data.color;
+    }
+  }
+
+  // Inicializar
+  loadProducts();
+  loadContactData();
+</script>
+</body>
+</html>
+<!-- partial -->
+  
+</body>
+</html>
